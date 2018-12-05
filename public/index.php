@@ -1,6 +1,5 @@
 <?php
   require '/home/vagrant/code/blog/public/Dev.php';
-  require '/home/vagrant/code/blog/public/QueryBuilder.php';
   require '/home/vagrant/code/blog/public/MyQueryBuilder.php';
 
   $db = new MyQueryBuilder(SERVER, USER, PASSWORD, DBNAME);
