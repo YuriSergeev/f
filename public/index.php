@@ -1,14 +1,13 @@
 <?php
-  require '/home/vagrant/code/blog/public/Dev.php';
-  require '/home/vagrant/code/blog/public/MyQueryBuilder.php';
 
-  $db = new MyQueryBuilder(SERVER, USER, PASSWORD, DBNAME);
+require '/home/vagrant/code/blog/public/Dump.php';
+require '/home/vagrant/code/blog/public/ConnectionDriver.php';
+require '/home/vagrant/code/blog/public/Builder.php';
+use blog\ConnectionDriver as connection;
+use blog\Builder as DB;
 
-  $table = $db->update('people')->set(["name" => "No", "age" => "1"])->where(["id" => "1221"]);
-  //$table = $db->select()->from('people')->orderBy(['id', 'DESC']);
+$connect = new connection('mysql', 'localhost', 'root', 'secret', 'querybuilder');
 
-  $name = $db->execute();
 
-  echo'<pre>';
-  print_r($name);
-  echo'</pre>';
+
+dd($connect);
