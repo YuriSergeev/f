@@ -71,7 +71,7 @@ class MyQueryBuilder
             $this->sql .= $columns[0];
         } else {
             foreach (func_get_args() as $key => $value) {
-                $this->sql .= $value = mysql_real_escape_string($value).', ';
+                $this->sql .= $value = mysqli_real_escape_string($this->connection, $value).', ';
             }
             $this->sql = substr($this->sql, 0, -2);
         }
@@ -106,7 +106,7 @@ class MyQueryBuilder
     {
         $this->sql .= ' VALUES (';
         foreach ($values as $key => $value) {
-            $this->sql .= '"'.$value = mysql_real_escape_string($value).'", ';
+            $this->sql .= '"'.$value = mysqli_real_escape_string($this->connection, $value).'", ';
         }
         $this->sql = substr($this->sql, 0, -2);
         $this->sql .= ')';
@@ -117,7 +117,7 @@ class MyQueryBuilder
     {
         $this->sql .= ' SET ';
         foreach ($values as $key => $value) {
-            $this->sql .= $key.' = "'.$value = mysql_real_escape_string($value).'", ';
+            $this->sql .= $key.' = "'.$value = mysqli_real_escape_string($this->connection, $value).'", ';
         }
         $this->sql = substr($this->sql, 0, -2);
         return $this;
@@ -127,7 +127,7 @@ class MyQueryBuilder
     {
         $this->sql .= ' WHERE ';
         foreach ($values as $key => $value) {
-            $this->sql .= $key.' = "'.$value = mysql_real_escape_string($value).'", ';
+            $this->sql .= $key.' = "'.$value = mysqli_real_escape_string($this->connection, $value).'", ';
         }
         $this->sql = substr($this->sql, 0, -2);
         return $this;
