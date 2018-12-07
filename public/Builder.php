@@ -1,46 +1,45 @@
 <?php
 namespace blog;
 
+use blog\QueryFactory;
+
 class Builder
 {
-    private $driver;
-
-    public $bindings = [
-        'select' => [],
-        'insert'   => [],
-        'join'   => [],
-        'from'   => [],
-        'where'  => [],
-        'order by'  => [],
-    ];
+    private $driver, $table;
 
     public function __construct($driver)
     {
         $this->driver = $driver;
     }
 
-    public function select($table = null, array $columns = null)
+    public function table($table = null)
     {
-        return $this->injectBuilder(QueryFactory::createSelect($table, $columns));
+        $this->table = $table;
+        return $this;
     }
 
-    public function insert($table = null, array $values = null)
+    public function select(array $columns = null)
     {
-        return $this->injectBuilder(QueryFactory::createInsert($table, $values));
+        return $this->execute(QueryFactory::createSelect($this->table, $columns));
     }
 
-    public function update($table = null, array $values = null)
+    public function insert(array $values = null)
     {
-        return $this->injectBuilder(QueryFactory::createUpdate($table, $values));
+        return $this->execute(QueryFactory::createInsert($this->table, $values));
+    }
+
+    public function update(array $values = null)
+    {
+        return $this->execute(QueryFactory::createUpdate($this->table, $values));
     }
 
     public function delete($table = null)
     {
-        return $this->injectBuilder(QueryFactory::createDelete($table));
+        return $this->execute(QueryFactory::createDelete($table));
     }
 
-    protected function injectBuilder(AbstractBaseQuery $query)
+    protected function execute()
     {
-        return $query->setBuilder($this);
+
     }
 }

@@ -1,6 +1,12 @@
 <?php
+namespace blog;
 
-final class QueryFactory
+use blog\Select;
+use blog\Insert;
+use blog\Update;
+use blog\Delete;
+
+class QueryFactory
 {
     public static function createSelect($table = null, array $columns = null)
     {
