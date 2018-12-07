@@ -16,11 +16,6 @@ class ConnectionDriver
         $this->createConnector($driver);
     }
 
-    function returnConnection()
-    {
-        return $this->driver;
-    }
-
     public function createConnector($driver)
     {
         if (! isset($driver)) {
@@ -43,25 +38,26 @@ class ConnectionDriver
 
     public function MySqlConnector()
     {
-        $this->driver = mysqli_connect($this->server, $this->user, $this->password, $this->dbname);
-        return $this;
+      $this->driver = mysqli_connect($this->server, $this->user, $this->password, $this->dbname);
+      ExceptionProcessing::exceptionConnect($this->driver);
+
     }
 
     public function PostgresConnector()
     {
         $this->driver = pg_connect($this->server, $this->user, $this->password, $this->dbname);
-        return $this;
+        ExceptionProcessing::exceptionConnect($this->driver);
     }
 
     public function SQLiteConnector()
     {
         $this->driver = sqlite_open($this->server, $this->user, $this->password, $this->dbname);
-        return $this;
+        ExceptionProcessing::exceptionConnect($this->driver);
     }
 
     public function SqlServerConnector()
     {
         $this->driver = sqlsrv_connect($this->server, $this->user, $this->password, $this->dbname);
-        return $this;
+        ExceptionProcessing::exceptionConnect($this->driver);
     }
 }
