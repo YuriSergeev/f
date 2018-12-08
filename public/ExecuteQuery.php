@@ -1,27 +1,24 @@
 <?php
-namespace blog;
+namespace builder;
 
 class ExecuteQuery
 {
-    static private $driver, $sql;
+    static private $driver, $query;
 
-    static public function processing($driver = null, $sql = null)
+    static public function processing($driver = null, $query = null)
     {
         self::$driver = $driver;
-        self::$sql = $sql;
+        self::$query = $query;
         if($driver != null) return self::query();
     }
 
     static private function query()
     {
-        self::$sql .= ';';
-        $query = mysqli_query(self::$driver, self::$sql);
-        
-        if(!$query) {
-            ExceptionProcessing::query();
-        }
+        self::$query .= ';';
 
-        if($query && strpos(self::$sql, ' SELECT ') == 0 && strpos(self::$sql, ' FROM ') != false) {
+        $query = mysqli_query(self::$driver, self::$query);
+
+        if($query && strpos(self::$query, ' SELECT ') == 0 && strpos(self::$query, ' FROM ') != false) {
             $fetched = [];
             $rows = mysqli_num_rows($query);
             for($i = 0; $i < $rows; $i++)
@@ -36,12 +33,13 @@ class ExecuteQuery
                 }
             }
 
-            self::$sql = null;
+            self::$query = null;
             mysqli_close(self::$driver);
         } else {
-            self::$sql = null;
+            self::$query = null;
             mysqli_close(self::$driver);
         }
+        
         return $fetched;
     }
 

@@ -1,5 +1,5 @@
 <?php
-namespace blog;
+namespace builder;
 
 class ConnectionDriver
 {
@@ -7,7 +7,7 @@ class ConnectionDriver
 
     public $driver;
 
-    public function __construct($driver, $server, $user, $password, $dbname)
+    public function __construct($driver, $server, $dbname, $user, $password)
     {
         $this->server = $server;
         $this->user = $user;
@@ -39,25 +39,20 @@ class ConnectionDriver
     public function MySqlConnector()
     {
       $this->driver = mysqli_connect($this->server, $this->user, $this->password, $this->dbname);
-      ExceptionProcessing::exceptionConnect($this->driver);
-
     }
 
     public function PostgresConnector()
     {
         $this->driver = pg_connect($this->server, $this->user, $this->password, $this->dbname);
-        ExceptionProcessing::exceptionConnect($this->driver);
     }
 
     public function SQLiteConnector()
     {
         $this->driver = sqlite_open($this->server, $this->user, $this->password, $this->dbname);
-        ExceptionProcessing::exceptionConnect($this->driver);
     }
 
     public function SqlServerConnector()
     {
         $this->driver = sqlsrv_connect($this->server, $this->user, $this->password, $this->dbname);
-        ExceptionProcessing::exceptionConnect($this->driver);
     }
 }
