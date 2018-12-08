@@ -1,14 +1,27 @@
 <?php
 
 require '/home/vagrant/code/blog/public/Dump.php';
-require '/home/vagrant/code/blog/public/ConnectionDriver.php';
 require '/home/vagrant/code/blog/public/QueryBuilder.php';
-require '/home/vagrant/code/blog/public/ExecuteQuery.php';
 
-use builder\ExecuteQuery;
-use builder\ConnectionDriver;
-use builder\QueryBuilder as DB;
+$config = [ 'sql'       => 'mysql',
+            'server'    => 'localhost',
+            'dbname'    => 'querybuilder',
+            'user'      => 'root',
+            'password'  => 'secret',
+            'charset'   => 'utf8mb4',
+          ];
 
-$sql = new DB("mysql", "localhost", "querybuilder", "root", "secret");
+$db = new QueryBuilder($config);
 
-dd($sql->select()->from('people')->execute());
+$id = 229;
+$name = 'Yes, baby';
+$age = 10;
+
+$values = [ 'id' => $id,
+            'name' => $name,
+            'age' => $age,
+          ];
+
+
+
+$db->insert('people')->values($values);

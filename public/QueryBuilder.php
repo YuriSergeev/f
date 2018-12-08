@@ -1,77 +1,146 @@
 <?php
 
-namespace builder;
-
-class QueryBuilder
+class QueryBuilder extends PDO
 {
-    public $query = '';
+    private $sql, $server, $dbname, $user, $password, $charset, $option, $type;
 
-    private $driver;
+    public $query = '', $pdo;
 
-    public function __construct($driver, $host, $dbname, $user, $password)
+    public function __construct($config)
     {
-          $this->driver = new ConnectionDriver($driver, $host, $dbname, $user, $password);
+        $this->sql = $config['sql'];
+        $this->server = $config['server'];
+        $this->user = $config['user'];
+        $this->password = $config['password'];
+        $this->dbname = $config['dbname'];
+        $this->charset = $config['charset'];
+
+        $dns = $this->sql.':host='.$this->server.';dbname='.$this->dbname.';charset='.$this->charset;
+
+        $this->option = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+
+        $this->pdo = new PDO($dns, $this->user, $this->password, $this->option);
     }
 
-    public function select($columns = '*')
+    public function select($table)
     {
-        $this->query .= ' SELECT '.$this->column($columns) .' ';
+        $this->query = 'SELECT * FROM '.$this->filter($table).' ';
         return $this;
     }
 
     public function insert($table)
     {
-        $this->query .= ' INSERT INTO '.$this->filter($table).' ';
+        $this->type = 'insert';
+
+        $this->query = 'INSERT INTO '.$this->filter($table).' ';
+        return $this;
+    }
+
+    public function replace($table)
+    {
+        $this->type = 'insert';
+
+        $this->query = 'REPLACE INTO '.$this->filter($table).' ';
+
         return $this;
     }
 
     public function update($table)
     {
-        $this->query .= ' UPDATE '.$this->filter($table).' ';
+        $this->type = 'update';
+
+        $this->query = 'UPDATE '.$this->filter($table).' SET ';
         return $this;
     }
 
-    public function delete($table)
+    public function delete($table, $id = '')
     {
-        $this->query = 'DELETE FROM '.$this->filter($table).' ';
-        return $this;
-    }
+        if (empty($id)) {
+            $this->query = 'DELETE FROM '.$this->filter($table).' ';
 
-    public function from($table)
-    {
-        $this->query .= ' FROM '.$this->filter($table).' ';
-        return $this;
-    }
+            return $this;
+        } else {
 
-    public function set($values)
-    {
-        $this->query .= ' SET ';
-        foreach ($values as $key => $value) {
-            $this->query .= $this->filter($key).' = "'.$this->filter($value).'", ';
+            $columns = $this->column($table);
+            $this->delete($table)->where(''.$this->filter($columns['Field']).' = "'.$this->filter($id).'"')->limit(1)->execute();
         }
-        $this->query = substr($this->query, 0, -2);
-        return $this;
     }
 
-    public function where($values)
+    public function where($condition)
     {
-        $this->query .= ' WHERE ';
-        foreach ($values as $key => $value) {
-            $this->query .= $this->filter($key).' = "'.$this->filter($value).'", ';
+        $this->query .= ' WHERE '.$condition;
+
+        if ($this->type == 'update') {
+            $query = $this->pdo->prepare($this->query);
+
+    		foreach ($this->values AS $value){
+    			if (is_array($value))
+    				$value = json_encode($value);
+
+    			  $res[] = $value;
+    		}
+
+            $query->execute($res);
+
+            return $this;
+        } else {
+            return $this;
         }
-        $this->query = substr($this->query, 0, -2);
-        return $this;
     }
 
     public function values($values)
     {
-        $result = ' VALUES (';
-        foreach ($values as $key => $value) {
-            $result .= $value.', ';
+        $keys = array_keys($values);
+        $vals = array_values($values);
+
+        if ($this->type == 'insert') {
+            $row = '(';
+            for ($i = 0; $i < count($values); $i++) {
+                $row .= $keys[$i];
+
+                if ($i != count($values) - 1) {
+                    $row .= ', ';
+                } else {
+                    $row .= ') VALUES (';
+                }
+            }
+            for ($i = 0; $i < count($values); $i++) {
+            	$row .= ':'.$keys[$i];
+
+                if ($i != count($values) - 1) {
+                    $row .= ', ';
+                } else {
+                    $row .= ')';
+                }
+            }
+
+            $this->query .= $this->filter($row);
+            $query = $this->pdo->prepare($this->query);
+
+            foreach ($values AS $value){
+      				if (is_array($value))
+      					$value = json_encode($value);
+
+      				$res[] = $value;
+      			}
+
+            $query->execute($res);
         }
-        $result = substr($result, 0, -2);
-        $this->query .= $result.') ';
-        return $this;
+
+        elseif ($this->type == 'update') {
+            for ($i = 0; $i < count($values); $i++) {
+                $this->query .= $this->filter($keys[$i]).' = :'.$this->filter($keys[$i]).' ';
+                if ($i != count($values) - 1) {
+                    $this->query .= ', ';
+                }
+            }
+
+            return $this;
+        }
     }
 
     public function limit($limit = 3000)
@@ -108,13 +177,14 @@ class QueryBuilder
         echo $this->query;
     }
 
-    public function execute()
+    public function execut()
     {
-        return ExecuteQuery::processing($this->driver->driver, $this->query);
+        $stmt = $this->pdo->query($this->query);
+
     }
 
     public function filter($valc)
     {
-        return mysqli_real_escape_string($this->driver->driver, $valc);
+        return $valc;
     }
 }
