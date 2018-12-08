@@ -8,20 +8,18 @@ $config = [ 'sql'       => 'mysql',
             'dbname'    => 'querybuilder',
             'user'      => 'root',
             'password'  => 'secret',
-            'charset'   => 'utf8mb4',
+            'charset'   => 'utf8',
           ];
 
 $db = new QueryBuilder($config);
 
-$id = 229;
-$name = 'Yes, baby';
+$id = 232;
+$name = 'updateNumber232';
 $age = 10;
 
-$values = [ 'id' => $id,
-            'name' => $name,
+$values = [ 'name' => $name,
             'age' => $age,
           ];
 
 
-
-$db->insert('people')->values($values);
+dd($db->select('people')->result());

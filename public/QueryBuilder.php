@@ -2,7 +2,7 @@
 
 class QueryBuilder extends PDO
 {
-    private $sql, $server, $dbname, $user, $password, $charset, $option, $type;
+    private $sql, $server, $dbname, $user, $password, $charset, $option, $type, $values;
 
     public $query = '', $pdo;
 
@@ -57,17 +57,12 @@ class QueryBuilder extends PDO
         return $this;
     }
 
-    public function delete($table, $id = '')
+    public function delete($table)
     {
-        if (empty($id)) {
-            $this->query = 'DELETE FROM '.$this->filter($table).' ';
+        $this->type = 'delete';
+        $this->query = 'DELETE FROM '.$this->filter($table).' ';
+        return $this;
 
-            return $this;
-        } else {
-
-            $columns = $this->column($table);
-            $this->delete($table)->where(''.$this->filter($columns['Field']).' = "'.$this->filter($id).'"')->limit(1)->execute();
-        }
     }
 
     public function where($condition)
@@ -76,17 +71,11 @@ class QueryBuilder extends PDO
 
         if ($this->type == 'update') {
             $query = $this->pdo->prepare($this->query);
-
-    		foreach ($this->values AS $value){
-    			if (is_array($value))
-    				$value = json_encode($value);
-
-    			  $res[] = $value;
-    		}
-
-            $query->execute($res);
+            $query->execute($this->values);
 
             return $this;
+        } elseif($this->type == 'delete') {
+            $this->pdo->query($this->query);
         } else {
             return $this;
         }
@@ -95,7 +84,7 @@ class QueryBuilder extends PDO
     public function values($values)
     {
         $keys = array_keys($values);
-        $vals = array_values($values);
+        $this->values = array_values($values);
 
         if ($this->type == 'insert') {
             $row = '(';
@@ -121,14 +110,7 @@ class QueryBuilder extends PDO
             $this->query .= $this->filter($row);
             $query = $this->pdo->prepare($this->query);
 
-            foreach ($values AS $value){
-      				if (is_array($value))
-      					$value = json_encode($value);
-
-      				$res[] = $value;
-      			}
-
-            $query->execute($res);
+            $query->execute($vals);
         }
 
         elseif ($this->type == 'update') {
@@ -155,32 +137,16 @@ class QueryBuilder extends PDO
         return $this;
     }
 
-    public function column($columns)
-    {
-        if(! is_array($columns))
-        {
-            return $columns;
-        }
-
-        $result = '';
-
-        foreach ($columns as $key => $value) {
-            $result .= $value.', ';
-        }
-        $result = substr($result, 0, -2);
-
-        return $result;
-    }
-
     public function write()
     {
         echo $this->query;
     }
 
-    public function execut()
+    public function result()
     {
-        $stmt = $this->pdo->query($this->query);
-
+        $stm = $this->pdo->prepare($this->query);
+        $stm->execute($this->values);
+        return $stm->fetchAll();
     }
 
     public function filter($valc)
