@@ -4,7 +4,7 @@ class QueryBuilder extends PDO
 {
     private $sql, $server, $dbname, $user, $password, $charset, $option, $type, $values;
 
-    public $query = '', $pdo;
+    public $query, $pdo;
 
     public function __construct($config)
     {
@@ -28,7 +28,10 @@ class QueryBuilder extends PDO
 
     public function select($table)
     {
+        $this->type = 'select';
+
         $this->query = 'SELECT * FROM '.$this->filter($table).' ';
+
         return $this;
     }
 
@@ -37,6 +40,7 @@ class QueryBuilder extends PDO
         $this->type = 'insert';
 
         $this->query = 'INSERT INTO '.$this->filter($table).' ';
+
         return $this;
     }
 
@@ -54,29 +58,35 @@ class QueryBuilder extends PDO
         $this->type = 'update';
 
         $this->query = 'UPDATE '.$this->filter($table).' SET ';
+
         return $this;
     }
 
     public function delete($table)
     {
         $this->type = 'delete';
+
         $this->query = 'DELETE FROM '.$this->filter($table).' ';
+
         return $this;
 
     }
 
     public function where($condition)
     {
-        $this->query .= ' WHERE '.$condition;
-
-        if ($this->type == 'update') {
+        $this->query .= ' WHERE '.$this->filter($condition);
+        if ($this->type == 'update')
+        {
             $query = $this->pdo->prepare($this->query);
             $query->execute($this->values);
-
-            return $this;
-        } elseif($this->type == 'delete') {
+        }
+        elseif($this->type == 'delete')
+        {
             $this->pdo->query($this->query);
-        } else {
+        }
+        elseif($this->type == 'select')
+        {
+
             return $this;
         }
     }
@@ -86,9 +96,11 @@ class QueryBuilder extends PDO
         $keys = array_keys($values);
         $this->values = array_values($values);
 
-        if ($this->type == 'insert') {
+        if ($this->type == 'insert')
+        {
             $row = '(';
-            for ($i = 0; $i < count($values); $i++) {
+            for ($i = 0; $i < count($values); $i++)
+            {
                 $row .= $keys[$i];
 
                 if ($i != count($values) - 1) {
@@ -97,7 +109,9 @@ class QueryBuilder extends PDO
                     $row .= ') VALUES (';
                 }
             }
-            for ($i = 0; $i < count($values); $i++) {
+
+            for ($i = 0; $i < count($values); $i++)
+            {
             	$row .= ':'.$keys[$i];
 
                 if ($i != count($values) - 1) {
@@ -125,6 +139,18 @@ class QueryBuilder extends PDO
         }
     }
 
+    public function left($condition)
+    {
+        $this->query .= 'LEFT JOIN '.$this->filter($condition).' ';
+        return $this;
+    }
+
+    public function using($column)
+    {
+        $this->query .= ' USING ('.$this->filter($column).')';
+        return $this;
+    }
+
     public function limit($limit = 3000)
     {
         $this->query .= ' LIMIT '.$this->filter($limit).' ';
@@ -136,6 +162,18 @@ class QueryBuilder extends PDO
         $this->query .= ' ORDER BY '.$this->filter($condition);
         return $this;
     }
+
+    public function add_column($column, $datatype)
+  	{
+    		$this->query .= 'MODIFY COLUMN '.$this->filter($column).' '.$this->filter($datatype);
+    		$this->query($this->query);
+  	}
+
+    public function drop_column($column)
+  	{
+    		$this->query .= 'DROP COLUMN '.$this->filter($column);
+    		$this->query($this->query);
+  	}
 
     public function write()
     {
@@ -149,8 +187,16 @@ class QueryBuilder extends PDO
         return $stm->fetchAll();
     }
 
-    public function filter($valc)
+    public function filter($input)
     {
-        return $valc;
+        $input = preg_replace('/([\x00-\x08][\x0b-\x0c][\x0e-\x20])/', '', $input);
+
+        $search = '!@#$%^&*()';
+        $search .= '~`";:?+/={}[]-_|\'\\';
+
+        for ($i = 0; $i < strlen($search); $i++) {
+            $input = preg_replace('/\\'.$search[$i].'/', '', $input);
+        }
+        return $input;
     }
 }

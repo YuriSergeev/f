@@ -11,15 +11,13 @@ $config = [ 'sql'       => 'mysql',
             'charset'   => 'utf8',
           ];
 
-$db = new QueryBuilder($config);
-
 $id = 232;
 $name = 'updateNumber232';
-$age = 10;
+$age = 'age';
 
 $values = [ 'name' => $name,
             'age' => $age,
           ];
 
-
-dd($db->select('people')->result());
+$db = new QueryBuilder($config);
+dd($db->select('people')->where($age.' > 1')->limit(1)->result());
