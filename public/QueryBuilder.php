@@ -74,21 +74,39 @@ class QueryBuilder extends PDO
 
     public function where($condition)
     {
-        $this->query .= ' WHERE '.$this->filter($condition);
-        if ($this->type == 'update')
-        {
-            $query = $this->pdo->prepare($this->query);
-            $query->execute($this->values);
+        if (is_array($where)) {
+            $_where = [];
+            foreach ($where as $column => $data) {
+                $_where[] = $type . $column . '=' . $this->escape($data);
+            }
+            $where = implode(' ' . $andOr . ' ', $_where);
+        } else {
+            if (is_array($op)) {
+                $x = explode('?', $where);
+                $w = '';
+                foreach ($x as $k => $v) {
+                    if (! empty($v)) {
+                        $w .= $type . $v . (isset($op[$k]) ? $this->escape($op[$k]) : '');
+                    }
+                }
+                $where = $w;
+            } elseif (! in_array($op, $this->op) || $op == false) {
+                $where = $type . $where . ' = ' . $this->escape($op);
+            } else {
+                $where = $type . $where . ' ' . $op . ' ' . $this->escape($val);
+            }
         }
-        elseif($this->type == 'delete')
-        {
-            $this->pdo->query($this->query);
+        if ($this->grouped) {
+            $where = '(' . $where;
+            $this->grouped = false;
         }
-        elseif($this->type == 'select')
-        {
+        if (is_null($this->where)) {
+            $this->where = $where;
+        } else {
+            $this->where = $this->where . ' ' . $andOr . ' ' . $where;
+        }
 
-            return $this;
-        }
+        return $this;
     }
 
     public function values($values)
@@ -124,7 +142,7 @@ class QueryBuilder extends PDO
             $this->query .= $this->filter($row);
             $query = $this->pdo->prepare($this->query);
 
-            $query->execute($vals);
+            $query->execute($this->values);
         }
 
         elseif ($this->type == 'update') {
@@ -192,7 +210,7 @@ class QueryBuilder extends PDO
         $input = preg_replace('/([\x00-\x08][\x0b-\x0c][\x0e-\x20])/', '', $input);
 
         $search = '!@#$%^&*()';
-        $search .= '~`";:?+/={}[]-_|\'\\';
+        $search .= '~`";+/={}[]-_|\'\\';
 
         for ($i = 0; $i < strlen($search); $i++) {
             $input = preg_replace('/\\'.$search[$i].'/', '', $input);

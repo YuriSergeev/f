@@ -1,7 +1,13 @@
 <?php
 
 require '/home/vagrant/code/blog/public/Dump.php';
-require '/home/vagrant/code/blog/public/QueryBuilder.php';
+require '/home/vagrant/code/blog/public/MyQueryBuilder.php';
+require '/home/vagrant/code/blog/public/QueryFactory.php';
+require '/home/vagrant/code/blog/public/SqlBuilder.php';
+
+use builder\MyQueryBuilder;
+
+
 
 $config = [ 'sql'       => 'mysql',
             'server'    => 'localhost',
@@ -11,13 +17,16 @@ $config = [ 'sql'       => 'mysql',
             'charset'   => 'utf8',
           ];
 
-$id = 232;
-$name = 'updateNumber232';
-$age = 'age';
+$driver = 'mysql';
 
-$values = [ 'name' => $name,
-            'age' => $age,
+$id = 998;
+$name = 'updateNumber232';
+$age = 20;
+
+$values = [ 'id'   => $id,
+            'name' => $name,
+            'age'  => $age,
           ];
 
-$db = new QueryBuilder($config);
-dd($db->select('people')->where($age.' > 1')->limit(1)->result());
+$db = MyQueryBuilder::sqlbuilder($driver, $config);
+$db->insert('people')->values($values)->execute();
