@@ -2,21 +2,46 @@
 
 class SqlBuilder extends QueryFactory
 {
-    private $driver, $query = '';
+    private $driver;
 
     public function __construct($config)
     {
         $this->connect($config);
     }
 
-    public function result()
+    public function getAll()
     {
+        $this->assembly();
+
         $stm = $this->driver->prepare($this->query);
         $stm->execute($this->values);
         return $stm->fetchAll();
     }
 
+
+
     public function execute()
+    {
+
+        $this->assembly();
+
+        $this->query = $this->filter($this->query);
+        $query = $this->driver->prepare($this->query);
+
+        if($this->type == 'insert') {
+            $query->execute($this->values[2]);
+        } else if($this->type == 'update') {
+            $query->execute($this->set[1]);
+        } else if($this->type == 'delete') {
+            $this->driver->query($this->query);
+        } else {
+            $query->execute($this->set[1]);
+        }
+
+        $this->clear();
+    }
+
+    public function assembly()
     {
         if(! is_null($this->select)) {
             $this->query .= 'SELECT '.$this->select;
@@ -27,11 +52,15 @@ class SqlBuilder extends QueryFactory
         }
 
         if(! is_null($this->update)) {
-            $this->query .= 'UPDATE '.$this->update.' SET ';
+            $this->query .= 'UPDATE '.$this->update.' ';
         }
 
         if(! is_null($this->delete)) {
-            $this->query .= 'DELETE '.$this->delete.' ';
+            $this->query .= 'DELETE FROM '.$this->delete.' ';
+        }
+
+        if(! is_null($this->set)) {
+            $this->query .= ' SET '.$this->set[0];
         }
 
         if(! is_null($this->from)) {
@@ -57,14 +86,6 @@ class SqlBuilder extends QueryFactory
         if(! is_null($this->orderBy)) {
             $this->query .= ' ORDER BY '.$this->orderBy;
         }
-
-        if($this->type == 'insert') {
-            $this->query = $this->filter($this->query);
-            $query = $this->driver->prepare($this->query);
-            $query->execute($this->values[2]);
-        }
-
-        return $this;
     }
 
     public function connect($config)

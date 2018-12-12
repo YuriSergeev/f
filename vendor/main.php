@@ -19,17 +19,29 @@ class Application {
                         'charset'   => 'utf8',
                       ];
 
-            $id = 997;
-            $name = 'updateNumber232';
-            $age = 20;
+            $id = 1;
+            $name = 'Dmitriy';
+            $age = 22;
 
-            $values = [ 'id'   => $id,
+            $values1 = ['id'   => $id,
                         'name' => $name,
                         'age'  => $age,
+                       ];
+
+            $values2 = [
+                       'name' => $name,
+                       'age'  => $age,
                       ];
 
             $db = MyQueryBuilder::sqlbuilder($config);
-            $db->update('people')->from('desc')->values($values)->execute();
+
+
+            $db->update('people')->set($values2)->where('id', 1)->execute();
+            $db->delete('people')->where('id', 1)->execute();
+            $db->insert('people')->values($values1)->execute();
+
+            $h = $db->select()->from('people')->getAll();
+            var_dump($h);
 
         } catch (Exception $e){
             echo '<h2>Внимание! Обнаружена ошибка.</h2>'.
