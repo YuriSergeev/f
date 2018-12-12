@@ -1,11 +1,5 @@
 <?php
 
-namespace builder;
-
-use builder\QueryFactory;
-
-use PDO;
-
 class SqlBuilder extends QueryFactory
 {
     private $driver, $query = '';
@@ -33,7 +27,7 @@ class SqlBuilder extends QueryFactory
         }
 
         if(! is_null($this->update)) {
-            $this->query .= 'UPDATE '.$this->update.' ';
+            $this->query .= 'UPDATE '.$this->update.' SET ';
         }
 
         if(! is_null($this->delete)) {
@@ -49,7 +43,11 @@ class SqlBuilder extends QueryFactory
         }
 
         if(! is_null($this->values)) {
-            $this->query .= $this->values[0].' VALUES '.$this->values[1];
+            if($this->type == 'insert') {
+              $this->query .= $this->values[0].' VALUES '.$this->values[1];
+            } else if($this->type == 'update') {
+              $this->query .= $this->values;
+            }
         }
 
         if(! is_null($this->limit)) {
@@ -71,7 +69,7 @@ class SqlBuilder extends QueryFactory
 
     public function connect($config)
     {
-        $sql = $config['sql'];
+        $sql = $config['driver'];
         $server = $config['server'];
         $user = $config['user'];
         $password = $config['password'];

@@ -1,7 +1,5 @@
 <?php
 
-namespace builder;
-
 abstract class QueryFactory
 {
     protected $select = null;
@@ -59,6 +57,12 @@ abstract class QueryFactory
 
     public function from($table)
     {
+        if($this->type != 'select')
+        {
+            echo 'Вы не моежете использовать функцию '.$this->type.' с функцией from';
+            exit;
+        }
+
         $this->from = $table;
 
         return $this;
@@ -66,6 +70,13 @@ abstract class QueryFactory
 
     public function values($values)
     {
+        if($this->type != 'insert' || $this->type != 'update')
+        {
+            echo 'Вы не моежете использовать функцию '.$this->type.' с функцией values';
+            exit;
+        }
+
+
         $keys = array_keys($values);
         $vals = array_values($values);
 
@@ -145,6 +156,12 @@ abstract class QueryFactory
 
     public function orderBy($condition)
     {
+        if($this->type != 'select')
+        {
+            echo 'Вы не моежете использовать функцию '.$this->type.' с функцией orderBy';
+            exit;
+        }
+
         $this->orderBy = $condition;
 
         return $this;
@@ -152,6 +169,12 @@ abstract class QueryFactory
 
     public function limit($limit, $limitEnd = null)
     {
+        if($this->type != 'select')
+        {
+            echo 'Вы не моежете использовать функцию '.$this->type.' с функцией orderBy';
+            exit;
+        }
+
         if (! is_null($limitEnd)) {
             $this->limit = $limit . ', ' . $limitEnd;
         } else {
