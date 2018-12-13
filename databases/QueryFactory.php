@@ -25,6 +25,9 @@ abstract class QueryFactory
 
     public function select($column = '*')
     {
+        if($this->type != null)
+              $this->checkType();
+
         $this->type = 'select';
 
         $select = (is_array($column) ? implode(', ', $column) : $column);
@@ -37,6 +40,9 @@ abstract class QueryFactory
 
     public function insert($table)
     {
+        if($this->type != null)
+              $this->checkType();
+
         $this->type = 'insert';
 
         $this->insert = $table;
@@ -48,6 +54,9 @@ abstract class QueryFactory
 
     public function update($table)
     {
+        if($this->type != null)
+              $this->checkType();
+
         $this->type = 'update';
 
         $this->update = $table;
@@ -59,6 +68,9 @@ abstract class QueryFactory
 
     public function delete($table)
     {
+        if($this->type != null)
+              $this->checkType();
+
         $this->type = 'delete';
 
         $this->delete = $table;
@@ -235,7 +247,12 @@ abstract class QueryFactory
 
     protected function except($type, $context)
     {
-        throw new \Exception("Вы не моежете использовать функцию {$type} с функцией {$context}");
+        throw new \Exception("Вы не можете использовать функцию {$type} с функцией {$context}");
+    }
+
+    protected function checkType()
+    {
+        throw new \Exception("Вы не можете использовать такую последовательность");
     }
 
 }

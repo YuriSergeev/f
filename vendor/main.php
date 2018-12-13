@@ -13,7 +13,7 @@ class Application {
             $config = [ 'driver'    => 'mysql',
                         'server'    => 'localhost',
                         'dbname'    => 'querybuilder',
-                        'user'      => 'oot',
+                        'user'      => 'root',
                         'password'  => 'secret',
                         'charset'   => 'utf8',
                       ];

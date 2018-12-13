@@ -41,7 +41,7 @@ class SqlBuilder extends QueryFactory
     public function assembly()
     {
         if(preg_match("/select/", $this->sequence)) {
-            $this->query .= 'SELECT '.$this->select;
+            $this->query .= 'SELECT '.$this->select.' ';
         }
 
         if(preg_match("/insert/", $this->sequence)) {
