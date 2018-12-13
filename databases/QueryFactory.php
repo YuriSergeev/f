@@ -3,6 +3,7 @@
 abstract class QueryFactory
 {
     protected $query = '';
+    protected $sequence = '';
     protected $select = null;
     protected $insert = null;
     protected $update = null;
@@ -18,6 +19,8 @@ abstract class QueryFactory
 
     abstract protected function execute();
 
+    abstract protected function assembly();
+
     abstract protected function connect($config);
 
     public function select($column = '*')
@@ -26,6 +29,8 @@ abstract class QueryFactory
 
         $select = (is_array($column) ? implode(', ', $column) : $column);
         $this->select = ($this->select == '*' ? $select : $this->select . ' ' . $select);
+
+        $this->sequence .= 'select ';
 
         return $this;
     }
@@ -36,6 +41,8 @@ abstract class QueryFactory
 
         $this->insert = $table;
 
+        $this->sequence .= 'insert ';
+
         return $this;
     }
 
@@ -44,6 +51,8 @@ abstract class QueryFactory
         $this->type = 'update';
 
         $this->update = $table;
+
+        $this->sequence .= 'update ';
 
         return $this;
     }
@@ -54,29 +63,27 @@ abstract class QueryFactory
 
         $this->delete = $table;
 
+        $this->sequence .= 'delete ';
+
         return $this;
     }
 
     public function from($table)
     {
-        if($this->type != 'select')
-        {
-            echo 'Вы не моежете использовать функцию '.$this->type.' с функцией from';
-            exit;
-        }
+        if ($this->type != 'select')
+            $this->except($this->type, "values");
 
         $this->from = $table;
+
+        $this->sequence .= ' from ';
 
         return $this;
     }
 
     public function values($values)
     {
-        if($this->type != 'insert')
-        {
-            echo 'Вы не моежете использовать функцию '.$this->type.' с функцией values';
-            exit;
-        }
+        if ($this->type != 'insert')
+            $this->except($this->type, "values");
 
         $keys = array_keys($values);
         $vals = array_values($values);
@@ -106,6 +113,8 @@ abstract class QueryFactory
 
         $this->values = [$row1, $row2, $vals];
 
+        $this->sequence .= ' values ';
+
         return $this;
     }
 
@@ -124,6 +133,8 @@ abstract class QueryFactory
         }
 
         $this->set = [$row1, $vals];
+
+        $this->sequence .= ' set ';
 
         return $this;
     }
@@ -158,35 +169,36 @@ abstract class QueryFactory
         } else {
             $this->where = $this->where . ' ' . $andOr . ' ' . $where;
         }
+
+        $this->sequence .= ' where ';
+
         return $this;
     }
 
     public function orderBy($condition)
     {
-        if($this->type != 'select')
-        {
-            echo 'Вы не моежете использовать функцию '.$this->type.' с функцией orderBy';
-            exit;
-        }
+        if ($this->type != 'select')
+            $this->except($this->type, "orderBy");
 
         $this->orderBy = $condition;
+
+        $this->sequence .= ' orderBy ';
 
         return $this;
     }
 
     public function limit($limit, $limitEnd = null)
     {
-        if($this->type != 'select')
-        {
-            echo 'Вы не моежете использовать функцию '.$this->type.' с функцией orderBy';
-            exit;
-        }
+        if ($this->type != 'select')
+            $this->except($this->type, "limit");
 
         if (! is_null($limitEnd)) {
             $this->limit = $limit . ', ' . $limitEnd;
         } else {
             $this->limit = $limit;
         }
+
+        $this->sequence .= ' limit ';
 
         return $this;
     }
@@ -207,6 +219,7 @@ abstract class QueryFactory
     public function clear()
     {
       $this->query = '';
+      $this->sequence = '';
       $this->select = null;
       $this->insert = null;
       $this->update = null;
@@ -218,6 +231,11 @@ abstract class QueryFactory
       $this->limit = null;
       $this->orderBy = null;
       $this->type = null;
+    }
+
+    protected function except($type, $context)
+    {
+        throw new \Exception("Вы не моежете использовать функцию {$type} с функцией {$context}");
     }
 
 }

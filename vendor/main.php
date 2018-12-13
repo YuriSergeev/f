@@ -10,17 +10,16 @@ class Application {
         spl_autoload_register(['ClassLoader', 'autoload'], true, true);
 
         try {
-
             $config = [ 'driver'    => 'mysql',
                         'server'    => 'localhost',
                         'dbname'    => 'querybuilder',
-                        'user'      => 'root',
+                        'user'      => 'oot',
                         'password'  => 'secret',
                         'charset'   => 'utf8',
                       ];
 
             $id = 1;
-            $name = 'Dmitriy';
+            $name = 'Dmitriy24';
             $age = 22;
 
             $values1 = ['id'   => $id,
@@ -33,8 +32,7 @@ class Application {
                        'age'  => $age,
                       ];
 
-            $db = MyQueryBuilder::sqlbuilder($config);
-
+            $db = MyQueryBuilder::connectionDBMS($config);
 
             $db->update('people')->set($values2)->where('id', 1)->execute();
             $db->delete('people')->where('id', 1)->execute();
@@ -46,10 +44,9 @@ class Application {
         } catch (Exception $e){
             echo '<h2>Внимание! Обнаружена ошибка.</h2>'.
             '<h4>'.$e->getMessage().'</h4>'.
-           '<pre>'.$e->getTraceAsString().'</pre>';
+            '<pre>'.$e->getTraceAsString().'</pre>';
             exit;
         }
-
     }
 
 }

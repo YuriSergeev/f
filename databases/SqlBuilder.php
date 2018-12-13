@@ -18,11 +18,8 @@ class SqlBuilder extends QueryFactory
         return $stm->fetchAll();
     }
 
-
-
     public function execute()
     {
-
         $this->assembly();
 
         $this->query = $this->filter($this->query);
@@ -43,48 +40,44 @@ class SqlBuilder extends QueryFactory
 
     public function assembly()
     {
-        if(! is_null($this->select)) {
+        if(preg_match("/select/", $this->sequence)) {
             $this->query .= 'SELECT '.$this->select;
         }
 
-        if(! is_null($this->insert)) {
+        if(preg_match("/insert/", $this->sequence)) {
             $this->query .= 'INSERT INTO '.$this->insert.' ';
         }
 
-        if(! is_null($this->update)) {
+        if(preg_match("/update/", $this->sequence)) {
             $this->query .= 'UPDATE '.$this->update.' ';
         }
 
-        if(! is_null($this->delete)) {
+        if(preg_match("/delete/", $this->sequence)) {
             $this->query .= 'DELETE FROM '.$this->delete.' ';
         }
 
-        if(! is_null($this->set)) {
+        if(preg_match("/set/", $this->sequence)) {
             $this->query .= ' SET '.$this->set[0];
         }
 
-        if(! is_null($this->from)) {
+        if(preg_match("/from/", $this->sequence)) {
             $this->query .= ' FROM '.$this->from;
         }
 
-        if(! is_null($this->where)) {
+        if(preg_match("/where/", $this->sequence)) {
             $this->query .= ' WHERE '.$this->where;
         }
 
-        if(! is_null($this->values)) {
-            if($this->type == 'insert') {
-              $this->query .= $this->values[0].' VALUES '.$this->values[1];
-            } else if($this->type == 'update') {
-              $this->query .= $this->values;
-            }
+        if(preg_match("/values/", $this->sequence)) {
+            $this->query .= $this->values[0].' VALUES '.$this->values[1];
         }
 
-        if(! is_null($this->limit)) {
-            $this->query .= ' LIMIT '.$this->limit;
-        }
-
-        if(! is_null($this->orderBy)) {
+        if(preg_match("/orderBy/", $this->sequence)) {
             $this->query .= ' ORDER BY '.$this->orderBy;
+        }
+
+        if(preg_match("/limit/", $this->sequence)) {
+            $this->query .= ' LIMIT '.$this->limit;
         }
     }
 
