@@ -25,6 +25,8 @@ abstract class QueryFactory
 
     public function select($column = '*')
     {
+        $this->sequence .= 'select ';
+
         if($this->type != null)
               $this->checkType();
 
@@ -33,13 +35,15 @@ abstract class QueryFactory
         $select = (is_array($column) ? implode(', ', $column) : $column);
         $this->select = ($this->select == '*' ? $select : $this->select . ' ' . $select);
 
-        $this->sequence .= 'select ';
+
 
         return $this;
     }
 
     public function insert($table)
     {
+        $this->sequence .= 'insert ';
+
         if($this->type != null)
               $this->checkType();
 
@@ -47,13 +51,13 @@ abstract class QueryFactory
 
         $this->insert = $table;
 
-        $this->sequence .= 'insert ';
-
         return $this;
     }
 
     public function update($table)
     {
+        $this->sequence .= 'update ';
+
         if($this->type != null)
               $this->checkType();
 
@@ -61,21 +65,19 @@ abstract class QueryFactory
 
         $this->update = $table;
 
-        $this->sequence .= 'update ';
-
         return $this;
     }
 
     public function delete($table)
     {
+        $this->sequence .= 'delete ';
+
         if($this->type != null)
               $this->checkType();
 
         $this->type = 'delete';
 
         $this->delete = $table;
-
-        $this->sequence .= 'delete ';
 
         return $this;
     }
@@ -252,7 +254,7 @@ abstract class QueryFactory
 
     protected function checkType()
     {
-        throw new \Exception("Вы не можете использовать такую последовательность");
+        throw new \Exception("Вы не можете использовать такую последовательность {$this->sequence}");
     }
 
 }
